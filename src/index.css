@@ -1,0 +1,279 @@
+/* =============================================================================
+   FONT IMPORTS
+   ============================================================================= */
+
+/* Satoshi - Body font from Fontshare */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap');
+
+/* Azeret Mono - Monospace font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&display=swap');
+
+/* Silk Serif - Display font (self-hosted) */
+@font-face {
+  font-family: 'Silk Serif';
+  src: url('/fonts/SilkSerif-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =============================================================================
+   TAILWIND & THEME
+   ============================================================================= */
+
+@import "tailwindcss";
+
+@theme {
+  /* Font families */
+  --font-silk: 'Silk Serif', serif;
+  --font-satoshi: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Azeret Mono', monospace;
+
+  /* Colors - Brand palette */
+  --color-amethyst: #5835B0;
+  --color-amethyst-dark: #8B6AFF;
+  --color-lilac: #BF92F0;
+  --color-rose: #D78F8D;
+  --color-gold: #DBA166;
+  --color-peridot: #87AA61;
+
+  /* Semantic colors */
+  --color-success: #16A34A;
+  --color-success-dark: #22C55E;
+  --color-error: #DC2626;
+  --color-error-dark: #EF4444;
+  --color-warning: #D97706;
+  --color-warning-dark: #F59E0B;
+
+  /* Backgrounds */
+  --color-bg-dark: #0a0a0a;
+  --color-bg-light: #FAF8F4;
+  --color-surface-dark: #141414;
+  --color-surface-light: #FFFFFF;
+}
+
+/* =============================================================================
+   BASE STYLES
+   ============================================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =============================================================================
+   DARK/LIGHT MODE
+   ============================================================================= */
+
+html.dark {
+  background-color: #0a0a0a;
+  color: #FAFAFA;
+}
+
+html.light {
+  background-color: #FAF8F4;
+  color: #1A1A1A;
+}
+
+/* Theme-aware utility classes */
+.theme-bg {
+  background-color: #FAF8F4;
+}
+.dark .theme-bg {
+  background-color: #0a0a0a;
+}
+
+.theme-surface {
+  background-color: #FFFFFF;
+}
+.dark .theme-surface {
+  background-color: #141414;
+}
+
+.theme-heading {
+  color: #1A1A1A;
+}
+.dark .theme-heading {
+  color: #FAFAFA;
+}
+
+.theme-body {
+  color: #4A4A4A;
+}
+.dark .theme-body {
+  color: #A1A1A1;
+}
+
+.theme-muted {
+  color: #6B6B6B;
+}
+.dark .theme-muted {
+  color: #737373;
+}
+
+.theme-border {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.dark .theme-border {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-accent {
+  color: #5835B0;
+}
+.dark .theme-accent {
+  color: #8B6AFF;
+}
+
+.theme-accent-bg {
+  background-color: #5835B0;
+}
+.dark .theme-accent-bg {
+  background-color: #8B6AFF;
+}
+
+/* =============================================================================
+   ANIMATIONS
+   ============================================================================= */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* =============================================================================
+   SCROLLBAR STYLING
+   ============================================================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* =============================================================================
+   PRINT STYLES
+   ============================================================================= */
+
+@media print {
+  @page {
+    size: letter;
+    margin: 0.4in 0.5in;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* Print preview on screen */
+@media screen {
+  .print-preview {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 40px auto;
+    padding: 0.4in 0.5in;
+    background: white;
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .dark .print-preview {
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* =============================================================================
+   FORM STYLING
+   ============================================================================= */
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* Autofill styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: inherit;
+  transition: background-color 5000s ease-in-out 0s;
+}
