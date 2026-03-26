@@ -1,20 +1,65 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui'
 import { Input } from '../components/ui'
-import { GoogleLogo, EnvelopeSimple } from '@phosphor-icons/react'
+import { GoogleLogo } from '@phosphor-icons/react'
 
 export default function Login() {
   const { isDark } = useTheme()
+  const { signIn, signUp, signInWithGoogle } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const from = location.state?.from?.pathname || '/dashboard'
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement auth
-    console.log('Submit:', { email, password, isSignUp })
+    setLoading(true)
+    setError('')
+
+    try {
+      const { error: authError } = isSignUp
+        ? await signUp(email, password)
+        : await signIn(email, password)
+
+      if (authError) {
+        setError(authError.message)
+      } else {
+        if (isSignUp) {
+          setError('Check your email for a confirmation link!')
+        } else {
+          navigate(from, { replace: true })
+        }
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { error: authError } = await signInWithGoogle()
+      if (authError) {
+        setError(authError.message)
+      }
+    } catch (err) {
+      setError('Failed to sign in with Google')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -36,12 +81,25 @@ export default function Login() {
             {isSignUp ? 'Start optimizing your resume' : 'Sign in to continue'}
           </p>
 
+          {/* Error Message */}
+          {error && (
+            <div className={`mb-4 p-3 rounded-lg text-sm ${
+              error.includes('Check your email')
+                ? 'bg-green-500/10 text-green-500'
+                : 'bg-red-500/10 text-red-500'
+            }`}>
+              {error}
+            </div>
+          )}
+
           {/* Google Button */}
           <Button
             variant="secondary"
             className="w-full mb-4"
             icon={<GoogleLogo size={18} weight="bold" />}
             iconPosition="left"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
           >
             Continue with Google
           </Button>
@@ -71,7 +129,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Button type="submit" className="w-full mt-6">
+            <Button type="submit" className="w-full mt-6" loading={loading} disabled={loading}>
               {isSignUp ? 'Create Account' : 'Sign In'}
             </Button>
           </form>
