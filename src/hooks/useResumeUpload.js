@@ -9,6 +9,7 @@ export function useResumeUpload() {
   const [file, setFile] = useState(null)
   const [text, setText] = useState('')
   const [metadata, setMetadata] = useState(null)
+  const [parsedData, setParsedData] = useState(null) // Pre-parsed data (e.g., from LinkedIn)
   const [isExtracting, setIsExtracting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -16,6 +17,7 @@ export function useResumeUpload() {
     setFile(null)
     setText('')
     setMetadata(null)
+    setParsedData(null)
     setError(null)
     setIsExtracting(false)
   }, [])
@@ -37,18 +39,23 @@ export function useResumeUpload() {
     setFile(uploadedFile)
     setError(null)
     setIsExtracting(true)
+    setParsedData(null)
 
     try {
       const result = await extractStructured(uploadedFile)
       setText(result.text)
       setMetadata(result.metadata)
+      // LinkedIn exports come with pre-parsed data
+      if (result.parsedData) {
+        setParsedData(result.parsedData)
+      }
       setIsExtracting(false)
-      return true
+      return result
     } catch (err) {
       console.error('Extraction error:', err)
       setError(`Failed to extract text: ${err.message}`)
       setIsExtracting(false)
-      return false
+      return null
     }
   }, [])
 
@@ -83,9 +90,11 @@ export function useResumeUpload() {
     file,
     text,
     metadata,
+    parsedData,
     isExtracting,
     error,
     hasContent: Boolean(text),
+    isLinkedIn: metadata?.type === 'linkedin',
 
     // Actions
     processFile,

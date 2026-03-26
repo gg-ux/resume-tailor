@@ -1,5 +1,6 @@
 import { extractTextFromPDF, extractStructuredPDF } from './pdf'
 import { extractTextFromDOCX, extractStructuredDOCX } from './docx'
+import { extractFromLinkedIn, isLinkedInExport } from './linkedin'
 
 /**
  * Supported file types for resume extraction
@@ -8,9 +9,11 @@ export const SUPPORTED_TYPES = {
   'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
   'text/plain': 'txt',
+  'application/zip': 'zip',
+  'application/x-zip-compressed': 'zip',
 }
 
-export const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt']
+export const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.zip']
 
 /**
  * Check if a file type is supported
@@ -29,7 +32,7 @@ export function isSupported(file) {
 /**
  * Get file type from File object
  * @param {File} file - File to check
- * @returns {string|null} - 'pdf', 'docx', 'txt', or null
+ * @returns {string|null} - 'pdf', 'docx', 'txt', 'zip', or null
  */
 export function getFileType(file) {
   const type = SUPPORTED_TYPES[file.type]
@@ -39,13 +42,17 @@ export function getFileType(file) {
   if (ext === 'pdf') return 'pdf'
   if (ext === 'docx') return 'docx'
   if (ext === 'txt') return 'txt'
+  if (ext === 'zip') return 'zip'
 
   return null
 }
 
+// Re-export LinkedIn utilities
+export { isLinkedInExport }
+
 /**
  * Extract text from a resume file
- * @param {File} file - Resume file (PDF, DOCX, or TXT)
+ * @param {File} file - Resume file (PDF, DOCX, TXT, or LinkedIn ZIP)
  * @returns {Promise<string>} - Extracted text
  */
 export async function extractText(file) {
@@ -62,6 +69,14 @@ export async function extractText(file) {
       return extractTextFromDOCX(file)
     case 'txt':
       return file.text()
+    case 'zip': {
+      const isLinkedIn = await isLinkedInExport(file)
+      if (isLinkedIn) {
+        const result = await extractFromLinkedIn(file)
+        return result.text
+      }
+      throw new Error('ZIP file does not appear to be a LinkedIn data export')
+    }
     default:
       throw new Error(`Unknown file type: ${fileType}`)
   }
@@ -70,7 +85,7 @@ export async function extractText(file) {
 /**
  * Extract structured content from a resume file
  * @param {File} file - Resume file
- * @returns {Promise<{text: string, metadata: object}>}
+ * @returns {Promise<{text: string, metadata: object, parsedData?: object}>}
  */
 export async function extractStructured(file) {
   const fileType = getFileType(file)
@@ -109,6 +124,22 @@ export async function extractStructured(file) {
           type: 'txt',
         },
       }
+    }
+    case 'zip': {
+      const isLinkedIn = await isLinkedInExport(file)
+      if (isLinkedIn) {
+        const result = await extractFromLinkedIn(file)
+        return {
+          text: result.text,
+          metadata: {
+            type: 'linkedin',
+            source: 'LinkedIn Data Export',
+          },
+          // LinkedIn exports are already parsed into structured data
+          parsedData: result.data,
+        }
+      }
+      throw new Error('ZIP file does not appear to be a LinkedIn data export')
     }
     default:
       throw new Error(`Unknown file type: ${fileType}`)
